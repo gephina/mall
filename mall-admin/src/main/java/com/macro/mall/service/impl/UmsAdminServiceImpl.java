@@ -62,7 +62,7 @@ public class UmsAdminServiceImpl implements UmsAdminService {
         //先从缓存中获取数据
         UmsAdmin admin = getCacheService().getAdmin(username);
         if (admin != null) return admin;
-        //缓存中没有从数据库中获取
+        //缓存中没有再从数据库中获取
         UmsAdminExample example = new UmsAdminExample();
         example.createCriteria().andUsernameEqualTo(username);
         List<UmsAdmin> adminList = adminMapper.selectByExample(example);
@@ -189,8 +189,8 @@ public class UmsAdminServiceImpl implements UmsAdminService {
 
     @Override
     public int delete(Long id) {
-        getCacheService().delAdmin(id);
         int count = adminMapper.deleteByPrimaryKey(id);
+        getCacheService().delAdmin(id);
         getCacheService().delResourceList(id);
         return count;
     }
@@ -275,5 +275,13 @@ public class UmsAdminServiceImpl implements UmsAdminService {
     @Override
     public UmsAdminCacheService getCacheService() {
         return SpringUtil.getBean(UmsAdminCacheService.class);
+    }
+
+    @Override
+    public void logout(String username) {
+        //清空缓存中的用户相关数据
+        UmsAdmin admin = getCacheService().getAdmin(username);
+        getCacheService().delAdmin(admin.getId());
+        getCacheService().delResourceList(admin.getId());
     }
 }
